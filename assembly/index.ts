@@ -36,6 +36,7 @@ export function getRandomQuote(): Quote {
   const request = new http.Request("https://zenquotes.io/api/random");
 
   const response = http.fetch(request);
+
   if (!response.ok) {
     throw new Error(
       `Failed to fetch quote. Received: ${response.status} ${response.statusText}`,
