@@ -11,11 +11,20 @@
     "zenquotes": {
       "type": "http",
       "baseUrl": "https://zenquotes.io/"
+    },
+    "assemblyai": {
+      "type": "http",
+      "baseUrl": "https://api.assemblyai.com/v2/transcript/"
     }
   },
   "models": {
     "text-generator": {
       "sourceModel": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "provider": "hugging-face",
+      "connection": "hypermode"
+    },
+    "codellama": {
+      "sourceModel": "meta-llama/codellama",
       "provider": "hugging-face",
       "connection": "hypermode"
     }

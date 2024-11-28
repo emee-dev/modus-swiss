@@ -1,0 +1,15 @@
+schema {
+  query: Query
+}
+
+type Query {
+  generateText(instruction: String!, prompt: String!): String!
+  randomQuote: Quote!
+  sayHello(name: String = null): String!
+  transcript(apikey: String!, transcriptId: String!): String!
+}
+
+type Quote {
+  author: String!
+  quote: String!
+}
