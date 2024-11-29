@@ -18,13 +18,6 @@
     "zenquotes": {
       "type": "http",
       "baseUrl": "https://zenquotes.io/"
-    },
-    "assemblyai": {
-      "type": "http",
-      "baseUrl": "https://api.assemblyai.com/v2/transcript/",
-      "headers": {
-        "Authorization": "Bearer {{ASSEMBLYAI_API_KEY}}"
-      }
     }
   },
   "models": {
