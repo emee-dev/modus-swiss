@@ -18,10 +18,25 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
+  aiAutoComplete: Scalars['String']['output'];
+  aiImageToText: Scalars['String']['output'];
   generateText: Scalars['String']['output'];
   randomQuote: Quote;
+  retrieveTranscript: Scalars['String']['output'];
   sayHello: Scalars['String']['output'];
-  transcript: Scalars['String']['output'];
+};
+
+
+export type QueryAiAutoCompleteArgs = {
+  lang: Scalars['String']['input'];
+  prefix: Scalars['String']['input'];
+  suffix: Scalars['String']['input'];
+};
+
+
+export type QueryAiImageToTextArgs = {
+  base64Img: Scalars['String']['input'];
+  prompt?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -31,14 +46,13 @@ export type QueryGenerateTextArgs = {
 };
 
 
-export type QuerySayHelloArgs = {
-  name?: InputMaybe<Scalars['String']['input']>;
+export type QueryRetrieveTranscriptArgs = {
+  transcriptId: Scalars['String']['input'];
 };
 
 
-export type QueryTranscriptArgs = {
-  apikey: Scalars['String']['input'];
-  transcriptId: Scalars['String']['input'];
+export type QuerySayHelloArgs = {
+  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Quote = {
@@ -47,13 +61,22 @@ export type Quote = {
   quote: Scalars['String']['output'];
 };
 
-export type SayHelloQueryVariables = Exact<{
-  first: Scalars['String']['input'];
-  second: Scalars['String']['input'];
+export type AiAutoCompleteQueryVariables = Exact<{
+  prefix: Scalars['String']['input'];
+  suffix: Scalars['String']['input'];
+  lang: Scalars['String']['input'];
 }>;
 
 
-export type SayHelloQuery = { __typename?: 'Query', transcript: string };
+export type AiAutoCompleteQuery = { __typename?: 'Query', aiAutoComplete: string };
+
+export type AiImageToTextQueryVariables = Exact<{
+  base64Img: Scalars['String']['input'];
+  prompt: Scalars['String']['input'];
+}>;
+
+
+export type AiImageToTextQuery = { __typename?: 'Query', aiImageToText: string };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -70,8 +93,13 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
-export const SayHelloDocument = new TypedDocumentString(`
-    query SayHello($first: String!, $second: String!) {
-  transcript(transcriptId: $first, apikey: $second)
+export const AiAutoCompleteDocument = new TypedDocumentString(`
+    query AiAutoComplete($prefix: String!, $suffix: String!, $lang: String!) {
+  aiAutoComplete(prefix: $prefix, suffix: $suffix, lang: $lang)
 }
-    `) as unknown as TypedDocumentString<SayHelloQuery, SayHelloQueryVariables>;
+    `) as unknown as TypedDocumentString<AiAutoCompleteQuery, AiAutoCompleteQueryVariables>;
+export const AiImageToTextDocument = new TypedDocumentString(`
+    query AiImageToText($base64Img: String!, $prompt: String!) {
+  aiImageToText(base64Img: $base64Img, prompt: $prompt)
+}
+    `) as unknown as TypedDocumentString<AiImageToTextQuery, AiImageToTextQueryVariables>;

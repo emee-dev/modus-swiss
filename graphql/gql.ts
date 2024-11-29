@@ -15,13 +15,18 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
-    "\n  query SayHello($first: String!, $second: String!) {\n    transcript(transcriptId: $first, apikey: $second)\n  }\n": types.SayHelloDocument,
+    "\n  query AiAutoComplete($prefix: String!, $suffix: String!, $lang: String!) {\n    aiAutoComplete(prefix: $prefix, suffix: $suffix, lang: $lang)\n  }\n": types.AiAutoCompleteDocument,
+    "\n  query AiImageToText($base64Img: String!, $prompt: String!) {\n    aiImageToText(base64Img: $base64Img, prompt: $prompt)\n  }\n": types.AiImageToTextDocument,
 };
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query SayHello($first: String!, $second: String!) {\n    transcript(transcriptId: $first, apikey: $second)\n  }\n"): typeof import('./graphql').SayHelloDocument;
+export function graphql(source: "\n  query AiAutoComplete($prefix: String!, $suffix: String!, $lang: String!) {\n    aiAutoComplete(prefix: $prefix, suffix: $suffix, lang: $lang)\n  }\n"): typeof import('./graphql').AiAutoCompleteDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query AiImageToText($base64Img: String!, $prompt: String!) {\n    aiImageToText(base64Img: $base64Img, prompt: $prompt)\n  }\n"): typeof import('./graphql').AiImageToTextDocument;
 
 
 export function graphql(source: string) {

@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LANGUAGES, SNIPPETS } from "@/consts";
 import { graphql } from "@/graphql";
 import { execute } from "@/graphql/execute";
-
 import { toast } from "@/hooks/use-toast";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { useMutation } from "@tanstack/react-query";
@@ -21,7 +20,6 @@ import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import axios from "axios";
 import { inlineCopilot } from "codemirror-copilot";
-
 import { Loader } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 
@@ -72,9 +70,15 @@ const customTheme = EditorView.theme({
   },
 });
 
-const transcripts = graphql(`
-  query SayHello($first: String!, $second: String!) {
-    transcript(transcriptId: $first, apikey: $second)
+// const retrieveTranscript = graphql(`
+//   query RetrieveTranscripts($transcriptId: String!) {
+//     retrieveTranscript(transcriptId: $transcriptId)
+//   }
+// `);
+
+const autoComplete = graphql(`
+  query AiAutoComplete($prefix: String!, $suffix: String!, $lang: String!) {
+    aiAutoComplete(prefix: $prefix, suffix: $suffix, lang: $lang)
   }
 `);
 
@@ -107,20 +111,23 @@ export default function CodeEditor() {
     },
   });
 
-  const getTranscripts = useMutation({
-    mutationKey: ["transcripts"],
-    mutationFn: (args: { first: string; second: string }) =>
-      execute(transcripts, {
-        first: args.first,
-        second: args.second,
-      }),
-  });
+  // const getTranscripts = useMutation({
+  //   mutationKey: ["transcripts"],
+  //   mutationFn: (args: { transcriptId: string; }) =>
+  //     execute(transcripts, args),
+  // });
 
-  useEffect(() => {
-    if (getTranscripts.data) {
-      console.log("getTranscripts.data", getTranscripts.data);
-    }
-  }, [getTranscripts.data]);
+  //   const getCode = useMutation({
+  //     mutationKey: ["autocomplete"],
+  //     mutationFn: (args: { prefix: string; suffix: string; lang: string }) =>
+  //       execute(autoComplete, args),
+  //   });
+
+  // useEffect(() => {
+  //   if (getTranscripts.data) {
+  //     console.log("getTranscripts.data", getTranscripts.data);
+  //   }
+  // }, [getTranscripts.data]);
 
   useEffect(() => {
     setCode(SNIPPETS[language]);
@@ -157,19 +164,7 @@ export default function CodeEditor() {
     <div className="h-screen font-geistMono flex flex-col bg-background text-foreground">
       <nav className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
         <h1 className="text-lg font-bold">Code editor</h1>
-        <div className="flex items-center gap-x-2">
-          <Button
-            onClick={() => {
-              console.log("Clicked");
-              getTranscripts.mutate({
-                first: "7c675ccd-0f80-4cf2-897d-3190de80db17",
-                second: "2e2b74b18a7d4103b1ee2ec3a72830d8",
-              });
-            }}
-          >
-            Run Query
-          </Button>
-        </div>
+        <div className="flex items-center gap-x-2"></div>
       </nav>
 
       {/* Main content */}
@@ -225,7 +220,18 @@ export default function CodeEditor() {
                     height="100%"
                     theme={[oneDark, customTheme]}
                     value={code}
-                    extensions={[loadLanguage(language) as any]}
+                    extensions={[
+                      loadLanguage(language) as any,
+                      inlineCopilot(async (prefix: string, suffix: string) => {
+                        let req = await execute(autoComplete, {
+                          prefix,
+                          suffix,
+                          lang: language,
+                        });
+
+                        return req.data.aiAutoComplete;
+                      }),
+                    ]}
                     onChange={(code) => setCode(code)}
                     className="text-base h-full w-full"
                   />
