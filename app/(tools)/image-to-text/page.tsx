@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getDescription, tools } from "@/consts";
+import { getDescription } from "@/consts";
 import { graphql } from "@/graphql";
 import { execute } from "@/graphql/execute";
 import { useToast } from "@/hooks/use-toast";

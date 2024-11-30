@@ -1,6 +1,9 @@
+import { http } from "@hypermode/modus-sdk-as";
+import { Headers } from "@hypermode/modus-sdk-as/assembly/http";
+
 
 @json
-export class Word {
+class Word {
   language_model!: string;
   text!: string;
   start!: u64;
@@ -14,7 +17,7 @@ export class Word {
 
 
 @json
-export class AssemblyAIGenerateTranscriptResponse {
+class AssemblyAIGenerateTranscriptResponse {
   id!: string;
   language_model!: string;
   acoustic_model!: string;
@@ -172,7 +175,7 @@ export class AssemblyAIGenerateTranscriptResponse {
 
 
 @json
-export class AssemblyAIGetTranscriptByIdResponse {
+class AssemblyAIGetTranscriptByIdResponse {
   id!: string;
   language_model!: string;
   acoustic_model!: string;
@@ -331,5 +334,79 @@ export class AssemblyAITranscriptPrompt {
   constructor(file_url: string) {
     this.audio_url = file_url;
     this.speech_model = "best";
+  }
+}
+
+export enum ReturnType {
+  STRING,
+  BOOLEAN,
+}
+
+
+@json
+class Result {
+  type!: ReturnType;
+  value: string = "";
+}
+
+export function generateTranscript(file_url: string): string {
+  let header = new Headers();
+
+  const body = http.Content.from(new AssemblyAITranscriptPrompt(file_url));
+
+  const request = new http.Request(`https://api.assemblyai.com/v2/transcript`, {
+    body: body,
+    method: "POST",
+    headers: header,
+  });
+
+  const response = http.fetch(request);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to generate transcript. Received: ${response.status} ${response.statusText}; Text: ${response.text()}`,
+    );
+  }
+
+  let responsedata = response.json<AssemblyAIGenerateTranscriptResponse>();
+
+  if (responsedata.status !== "queued") {
+    throw new Error(
+      `Error processing the file ${responsedata.audio_url} and id: ${responsedata.id}`,
+    );
+  }
+
+  return responsedata.id;
+}
+
+export function queryTranscriptById(transcriptId: string): Result {
+  let header = new Headers();
+
+  const request = new http.Request(
+    `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
+    {
+      body: null,
+      method: "GET",
+      headers: header,
+    },
+  );
+
+  const response = http.fetch(request);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch transcript. Received: ${response.status} ${response.statusText} text: ${response.text()}`,
+    );
+  }
+
+  let responsedata = response.json<AssemblyAIGetTranscriptByIdResponse>();
+
+  if (responsedata.status === "completed") {
+    return { type: ReturnType.STRING, value: responsedata.text };
+  } else {
+    return {
+      type: ReturnType.BOOLEAN,
+      value: `Failed to get transcript by Id status: ${responsedata.status}`,
+    };
   }
 }

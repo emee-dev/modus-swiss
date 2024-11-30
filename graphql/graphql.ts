@@ -22,8 +22,6 @@ export type Query = {
   aiImageToText: Scalars['String']['output'];
   aiMediaToText: Scalars['String']['output'];
   generateText: Scalars['String']['output'];
-  randomQuote: Quote;
-  sayHello: Scalars['String']['output'];
 };
 
 
@@ -48,17 +46,6 @@ export type QueryAiMediaToTextArgs = {
 export type QueryGenerateTextArgs = {
   instruction: Scalars['String']['input'];
   prompt: Scalars['String']['input'];
-};
-
-
-export type QuerySayHelloArgs = {
-  name?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type Quote = {
-  __typename?: 'Quote';
-  author: Scalars['String']['output'];
-  quote: Scalars['String']['output'];
 };
 
 export type AiAutoCompleteQueryVariables = Exact<{

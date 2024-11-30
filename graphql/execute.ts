@@ -35,8 +35,6 @@ export async function execute<TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
   ...[variables]: TVariables extends Record<string, never> ? [] : [TVariables]
 ) {
-  console.log("GRAPHQL_URL", GRAPHQL_URL);
-
   const response = await fetch(GRAPHQL_URL, {
     method: "POST",
     headers: headers,
@@ -50,5 +48,8 @@ export async function execute<TResult, TVariables>(
     throw new Error("Network response was not ok");
   }
 
-  return response.json() as Promise<{ data: TResult }>;
+  return response.json() as Promise<{
+    data: TResult;
+    errors?: { message: string }[];
+  }>;
 }

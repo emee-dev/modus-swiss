@@ -7,11 +7,4 @@ type Query {
   aiImageToText(base64Img: String!, prompt: String = null): String!
   aiMediaToText(file_url: String!): String!
   generateText(instruction: String!, prompt: String!): String!
-  randomQuote: Quote!
-  sayHello(name: String = null): String!
-}
-
-type Quote {
-  author: String!
-  quote: String!
 }

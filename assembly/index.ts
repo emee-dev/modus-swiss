@@ -1,20 +1,18 @@
 import { GeminiGenerateOutput } from "@hypermode/models-as/models/gemini/generate";
 import { http, models } from "@hypermode/modus-sdk-as";
 import { Headers } from "@hypermode/modus-sdk-as/assembly/http";
-import { sleep, sleepCallback } from "./utils/sleep";
 import {
   OpenAIChatModel,
   SystemMessage,
   UserMessage,
 } from "@hypermode/modus-sdk-as/models/openai/chat";
+import {
+  generateTranscript,
+  queryTranscriptById,
+  ReturnType,
+} from "./assemblyai";
 import { GeminiImagePrompt } from "./google";
 import { retryWithExponentialBackoff } from "./utils/retry";
-import {
-  AssemblyAIGenerateTranscriptResponse,
-  AssemblyAIGetTranscriptByIdResponse,
-  AssemblyAITranscriptPrompt,
-  Word,
-} from "./assemblyai";
 
 // store temp data, since there are no closures yet.
 var store = new Map<string, string>();
@@ -109,80 +107,6 @@ export function aiImageToText(
   return text;
 }
 
-enum ReturnType {
-  STRING,
-  BOOLEAN,
-}
-
-
-@json
-class Result {
-  type!: ReturnType;
-  value: string = "";
-}
-
-function generateTranscript(file_url: string): string {
-  let header = new Headers();
-
-  const body = http.Content.from(new AssemblyAITranscriptPrompt(file_url));
-
-  const request = new http.Request(`https://api.assemblyai.com/v2/transcript`, {
-    body: body,
-    method: "POST",
-    headers: header,
-  });
-
-  const response = http.fetch(request);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to generate transcript. Received: ${response.status} ${response.statusText}; Text: ${response.text()}`,
-    );
-  }
-
-  let responsedata = response.json<AssemblyAIGenerateTranscriptResponse>();
-
-  if (responsedata.status !== "queued") {
-    throw new Error(
-      `Error processing the file ${responsedata.audio_url} and id: ${responsedata.id}`,
-    );
-  }
-
-  return responsedata.id;
-}
-
-function queryTranscriptById(transcriptId: string): Result {
-  let header = new Headers();
-
-  const request = new http.Request(
-    `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
-    {
-      body: null,
-      method: "GET",
-      headers: header,
-    },
-  );
-
-  const response = http.fetch(request);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch transcript. Received: ${response.status} ${response.statusText} text: ${response.text()}`,
-    );
-  }
-
-  let responsedata = response.json<AssemblyAIGetTranscriptByIdResponse>();
-
-  if (responsedata.status === "completed") {
-    return { type: ReturnType.STRING, value: responsedata.text };
-  } else {
-    return {
-      type: ReturnType.BOOLEAN,
-      value: `Failed to get transcript by Id status: ${responsedata.status}`,
-    };
-  }
-}
-
 export function aiMediaToText(file_url: string): string {
   const transcriptId = generateTranscript(file_url);
 
@@ -206,34 +130,4 @@ export function aiMediaToText(file_url: string): string {
   store.delete(transcriptId);
 
   return transcript;
-}
-
-
-@json
-class Quote {
-
-  @alias("q")
-  quote!: string;
-
-
-  @alias("a")
-  author!: string;
-}
-
-export function getRandomQuote(): Quote {
-  const request = new http.Request("https://zenquotes.io/api/random");
-
-  const response = http.fetch(request);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch quote. Received: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  return response.json<Quote[]>()[0];
-}
-
-export function sayHello(name: string | null = null): string {
-  return `Hello, ${name || "World"}!`;
 }

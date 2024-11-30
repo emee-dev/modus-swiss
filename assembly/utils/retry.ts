@@ -36,5 +36,5 @@ export function retryWithExponentialBackoff(
     attempts++;
   }
 
-  console.log("All attempts failed.");
+  throw new Error(`All attempts failed. Querying transcript with Id: ${args}`);
 }
