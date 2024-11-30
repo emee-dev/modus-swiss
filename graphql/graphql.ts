@@ -20,9 +20,9 @@ export type Query = {
   __typename?: 'Query';
   aiAutoComplete: Scalars['String']['output'];
   aiImageToText: Scalars['String']['output'];
+  aiMediaToText: Scalars['String']['output'];
   generateText: Scalars['String']['output'];
   randomQuote: Quote;
-  retrieveTranscript: Scalars['String']['output'];
   sayHello: Scalars['String']['output'];
 };
 
@@ -40,14 +40,14 @@ export type QueryAiImageToTextArgs = {
 };
 
 
-export type QueryGenerateTextArgs = {
-  instruction: Scalars['String']['input'];
-  prompt: Scalars['String']['input'];
+export type QueryAiMediaToTextArgs = {
+  file_url: Scalars['String']['input'];
 };
 
 
-export type QueryRetrieveTranscriptArgs = {
-  transcriptId: Scalars['String']['input'];
+export type QueryGenerateTextArgs = {
+  instruction: Scalars['String']['input'];
+  prompt: Scalars['String']['input'];
 };
 
 
@@ -78,6 +78,21 @@ export type AiImageToTextQueryVariables = Exact<{
 
 export type AiImageToTextQuery = { __typename?: 'Query', aiImageToText: string };
 
+export type AiVideoToTextQueryVariables = Exact<{
+  file_url: Scalars['String']['input'];
+}>;
+
+
+export type AiVideoToTextQuery = { __typename?: 'Query', aiMediaToText: string };
+
+export type AiSummarizeTextQueryVariables = Exact<{
+  instruction: Scalars['String']['input'];
+  prompt: Scalars['String']['input'];
+}>;
+
+
+export type AiSummarizeTextQuery = { __typename?: 'Query', generateText: string };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -103,3 +118,13 @@ export const AiImageToTextDocument = new TypedDocumentString(`
   aiImageToText(base64Img: $base64Img, prompt: $prompt)
 }
     `) as unknown as TypedDocumentString<AiImageToTextQuery, AiImageToTextQueryVariables>;
+export const AiVideoToTextDocument = new TypedDocumentString(`
+    query AiVideoToText($file_url: String!) {
+  aiMediaToText(file_url: $file_url)
+}
+    `) as unknown as TypedDocumentString<AiVideoToTextQuery, AiVideoToTextQueryVariables>;
+export const AiSummarizeTextDocument = new TypedDocumentString(`
+    query AiSummarizeText($instruction: String!, $prompt: String!) {
+  generateText(instruction: $instruction, prompt: $prompt)
+}
+    `) as unknown as TypedDocumentString<AiSummarizeTextQuery, AiSummarizeTextQueryVariables>;

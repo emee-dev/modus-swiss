@@ -5,9 +5,9 @@ schema {
 type Query {
   aiAutoComplete(lang: String!, prefix: String!, suffix: String!): String!
   aiImageToText(base64Img: String!, prompt: String = null): String!
+  aiMediaToText(file_url: String!): String!
   generateText(instruction: String!, prompt: String!): String!
   randomQuote: Quote!
-  retrieveTranscript(transcriptId: String!): String!
   sayHello(name: String = null): String!
 }
 

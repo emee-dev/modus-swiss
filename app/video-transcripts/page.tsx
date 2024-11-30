@@ -2,7 +2,7 @@
 import { FileUploaderMinimal } from "@uploadcare/react-uploader/next";
 import "@uploadcare/react-uploader/core.css";
 import { UploadCareUploadError } from "@/type/error";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -19,6 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMutation } from "@tanstack/react-query";
+import { graphql } from "@/graphql";
+import { execute } from "@/graphql/execute";
 
 type QueuedFile = UploadCareOnChangeEvent["allEntries"][number];
 
@@ -48,13 +51,13 @@ type QueuedFile = UploadCareOnChangeEvent["allEntries"][number];
 //     }
 //   }, [files]);
 
-//   const handleChangeEvent = (e: UploadCareOnChangeEvent) => {
-//     setFiles([
-//       ...e.allEntries?.filter((file: QueuedFile) => file.status === "success"),
-//     ]);
-//   };
+// const handleChangeEvent = (e: UploadCareOnChangeEvent) => {
+//   setFiles([
+//     ...e.allEntries?.filter((file: QueuedFile) => file.status === "success"),
+//   ]);
+// };
 
-//   const handleUploadFailed = (e: UploadCareUploadError) => {};
+// const handleUploadFailed = (e: UploadCareUploadError) => {};
 
 //   return (
 //     <div className="min-h-screen bg-white">
@@ -311,78 +314,71 @@ type QueuedFile = UploadCareOnChangeEvent["allEntries"][number];
 //   );
 // }
 
+const aiMediaToText = graphql(`
+  query AiVideoToText($file_url: String!) {
+    aiMediaToText(file_url: $file_url)
+  }
+`);
+
+const generateText = graphql(`
+  query AiSummarizeText($instruction: String!, $prompt: String!) {
+    generateText(instruction: $instruction, prompt: $prompt)
+  }
+`);
+
+// "https://assembly.ai/wildfires.mp3"
+
 const inputDescription = "Enter a video URL (YouTube links are not supported)";
+
+const wait = (ms: number) => {
+  return new Promise((resolve) => {
+    return setTimeout(resolve, ms);
+  });
+};
 
 export default function VideoTranscriptApp() {
   const [inputType, setInputType] = useState<"url" | "file">("url");
-  const [videoSource, setVideoSource] = useState<string>("");
+  const [videoLink, setVideoLink] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<
-    "idle" | "uploading" | "uploaded"
-  >("idle");
-  const [transcriptionStatus, setTranscriptionStatus] = useState<
-    "idle" | "transcribing" | "done"
-  >("idle");
-  const [uploadProgress, setUploadProgress] = useState(0);
+
   const [transcript, setTranscript] = useState("");
   const { toast } = useToast();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setVideoSource("");
+  const [files, setFiles] = useState<QueuedFile[]>([]);
+
+  const { data, isPending, status, error, mutate } = useMutation({
+    mutationKey: ["upload_video_link"],
+    mutationFn: async (args: { file_url: string }) =>
+      execute(aiMediaToText, args),
+    // wait(5000),
+  });
+
+  useEffect(() => {
+    if (data) {
+      setTranscript(data.data.aiMediaToText);
     }
-  };
+  }, [data]);
 
-  const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setVideoSource(event.target.value);
-    setFile(null);
-  };
-
-  const handleUpload = () => {
-    if (!file && !videoSource) return;
-
-    setUploadStatus("uploading");
-    setUploadProgress(0);
-
-    // Simulating upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(interval);
-          setUploadStatus("uploaded");
-          toast({
-            description:
-              "Video uploaded successfully. Starting transcription...",
-          });
-          startTranscription();
-          return 100;
-        }
-        return prevProgress + 10;
-      });
-    }, 500);
-  };
-
-  const startTranscription = () => {
-    setTranscriptionStatus("transcribing");
-    // Simulating transcription process
-    setTimeout(() => {
-      setTranscriptionStatus("done");
-      setTranscript(
-        "This is a sample transcript of the uploaded video. In a real application, this would be the actual transcript returned from the transcription service.",
-      );
+  useEffect(() => {
+    if (error) {
       toast({
-        description: "Transcription completed!",
+        description: `Error: ${error.message}`,
       });
-    }, 5000); // Simulating a 5-second transcription process
+    }
+  }, [error]);
+
+  const handleChangeEvent = (e: UploadCareOnChangeEvent) => {
+    setFiles([
+      ...e.allEntries?.filter((file: QueuedFile) => file.status === "success"),
+    ]);
   };
 
-  const handleSummarize = () => {
-    toast({
-      description:
-        "In a real application, this would send the transcript to an AI service for summarization.",
-    });
+  const handleUploadFailed = (e: UploadCareUploadError) => {};
+
+  const handleUploadByLink = () => {
+    if (!file && !videoLink) return;
+
+    mutate({ file_url: videoLink });
   };
 
   return (
@@ -424,47 +420,40 @@ export default function VideoTranscriptApp() {
                 <Input
                   type="url"
                   placeholder="Enter a video URL"
-                  value={videoSource}
-                  onChange={handleUrlChange}
+                  value={videoLink}
+                  onChange={(e) => setVideoLink(e.target.value)}
                 />
                 <p className="text-sm text-gray-500" id="url-description">
                   {inputDescription}
                 </p>
               </div>
             ) : (
-              <div
-                className="cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:bg-gray-50"
-                onClick={() => document.getElementById("file-upload")?.click()}
-              >
-                <input
-                  id="file-upload"
-                  type="file"
-                  className="hidden"
-                  accept="video/*"
-                  onChange={handleFileChange}
-                />
-                {file ? (
-                  <p className="text-sm text-gray-500">{file.name}</p>
-                ) : (
-                  <>
-                    <FileVideo className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      Click to upload or drag and drop a video file
-                    </p>
-                  </>
-                )}
+              <div className="rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-8">
+                <div className="text-center flex flex-col transition-all group justify-center relative h-[110px]">
+                  <FileUploaderMinimal
+                    accept="video/*"
+                    multipleMax={1}
+                    pubkey={process.env.NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY!}
+                    onChange={(ev: any) => handleChangeEvent(ev)}
+                    className="absolute inset-0 w-full h-full cursor-pointer"
+                    onFileUploadFailed={(e: any) => handleUploadFailed(e)}
+                    removeCopyright
+                  />
+                </div>
+                <p className={`text-xs text-gray-400`}>Max size 40MB</p>
               </div>
             )}
 
+            {/* Hide button if view is file */}
             <Button
-              onClick={handleUpload}
-              disabled={uploadStatus !== "idle"}
+              onClick={handleUploadByLink}
+              disabled={isPending}
               className="w-full"
             >
               <Upload className="mr-2 h-4 w-4" /> Upload
             </Button>
 
-            {uploadStatus !== "idle" && (
+            {/* {inputType === "file" && status === "pending" && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Progress value={uploadProgress} className="flex-grow" />
@@ -476,25 +465,25 @@ export default function VideoTranscriptApp() {
                     : "Upload complete"}
                 </p>
               </div>
-            )}
+            )} */}
 
-            {transcriptionStatus !== "idle" && (
-              <div className="flex items-center space-x-2">
-                {transcriptionStatus === "transcribing" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">Transcribing video...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileVideo className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-green-500">
-                      Transcription complete
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              {isPending && (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Transcribing video...</span>
+                </>
+              )}
+
+              {!isPending && status === "success" && (
+                <>
+                  <FileVideo className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-green-500">
+                    Transcription complete
+                  </span>
+                </>
+              )}
+            </div>
 
             {transcript && (
               <div className="space-y-4">
@@ -504,7 +493,7 @@ export default function VideoTranscriptApp() {
                   readOnly
                   className="min-h-[200px]"
                 />
-                <Button onClick={handleSummarize} className="w-full">
+                <Button onClick={() => {}} className="w-full">
                   <Link className="mr-2 h-4 w-4" /> Summarize with AI
                 </Button>
               </div>
