@@ -70,12 +70,6 @@ const customTheme = EditorView.theme({
   },
 });
 
-// const retrieveTranscript = graphql(`
-//   query RetrieveTranscripts($transcriptId: String!) {
-//     retrieveTranscript(transcriptId: $transcriptId)
-//   }
-// `);
-
 const autoComplete = graphql(`
   query AiAutoComplete($prefix: String!, $suffix: String!, $lang: String!) {
     aiAutoComplete(prefix: $prefix, suffix: $suffix, lang: $lang)
@@ -110,24 +104,6 @@ export default function CodeEditor() {
       }
     },
   });
-
-  // const getTranscripts = useMutation({
-  //   mutationKey: ["transcripts"],
-  //   mutationFn: (args: { transcriptId: string; }) =>
-  //     execute(transcripts, args),
-  // });
-
-  //   const getCode = useMutation({
-  //     mutationKey: ["autocomplete"],
-  //     mutationFn: (args: { prefix: string; suffix: string; lang: string }) =>
-  //       execute(autoComplete, args),
-  //   });
-
-  // useEffect(() => {
-  //   if (getTranscripts.data) {
-  //     console.log("getTranscripts.data", getTranscripts.data);
-  //   }
-  // }, [getTranscripts.data]);
 
   useEffect(() => {
     setCode(SNIPPETS[language]);

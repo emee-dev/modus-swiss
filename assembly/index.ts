@@ -88,7 +88,7 @@ export function aiImageToText(
 
   if (!response.ok) {
     throw new Error(
-      `Failed to analyze image. Received: ${response.status} ${response.text()}`,
+      `Failed to analyze image. Received: ${response.status}; Text: ${response.text()}`,
     );
   }
 
@@ -108,6 +108,8 @@ export function aiImageToText(
 }
 
 export function aiMediaToText(file_url: string): string {
+  const maxRetries = 5;
+  const initialDelay = 1000;
   const transcriptId = generateTranscript(file_url);
 
   function callBack(id: string): bool {
@@ -122,7 +124,7 @@ export function aiMediaToText(file_url: string): string {
   }
 
   // Retry the function if it fails or is processing.
-  retryWithExponentialBackoff(callBack, 5, 1000, transcriptId);
+  retryWithExponentialBackoff(callBack, maxRetries, initialDelay, transcriptId);
 
   const transcript = store.get(transcriptId);
 

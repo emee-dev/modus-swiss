@@ -10,7 +10,7 @@ export default function DevUtilities() {
       <header className="border-b flex h-16 items-center px-4 sm:px-8">
         <Link href="/" className="flex items-center space-x-2">
           <Zap className="size-4" />
-          <span className="text-xl font-bold">Dev Utils</span>
+          <span className="text-xl font-bold">Dev tools</span>
         </Link>
         <div className="ml-auto flex items-center space-x-4">
           <Button variant="outline" asChild>
@@ -39,9 +39,8 @@ export default function DevUtilities() {
         </div>
       </header>
       <section className=" w-full px-4 py-12 sm:px-8">
-        {/* <div className="mx-auto max-w-[800px] space-y-8 text-center"> */}
         <div className="mx-auto space-y-8 text-center">
-          <h1 className="text-4xl font-bold">Dev Utilities</h1>
+          <h1 className="text-4xl font-bold">Dev tools</h1>
           <p className="text-xl text-muted-foreground">
             We exist to make developers lives easier.
             <br />

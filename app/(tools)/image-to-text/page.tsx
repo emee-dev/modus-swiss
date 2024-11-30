@@ -19,7 +19,7 @@ import { convertImageToBase64 } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
-import Image from "next/image";
+import { Image } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -60,13 +60,21 @@ export default function ImageToText() {
 
   useEffect(() => {
     if (error) {
-      console.error("ImageToText Error:", error);
+      console.error(error);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: `Request Error: ${error.message}`,
+      });
+    }
+
+    if (data && data.errors) {
+      console.error(data.errors);
       toast({
         title: "Uh oh! Something went wrong.",
         description: "There was a problem with your request.",
       });
     }
-  }, [error]);
+  }, [error, data]);
 
   const onSubmit = async (values: FormValues) => {
     if (values.file) {
@@ -80,7 +88,7 @@ export default function ImageToText() {
   };
 
   const handleCopy = () => {
-    if (data?.data.aiImageToText) {
+    if (data?.data?.aiImageToText) {
       navigator.clipboard.writeText(data.data.aiImageToText);
     }
   };
@@ -90,13 +98,7 @@ export default function ImageToText() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-purple-400 p-3">
-            <Image
-              src="/placeholder.svg?height=40&width=40"
-              alt="Logo"
-              width={40}
-              height={40}
-              className="h-full w-full"
-            />
+            <Image className="h-full w-full" />
           </div>
           <h1 className="mb-2 text-3xl font-bold">Image to Text</h1>
           <p className="text-gray-500">

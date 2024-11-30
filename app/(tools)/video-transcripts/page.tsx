@@ -30,6 +30,7 @@ import {
   Loader,
   Loader2,
   Upload,
+  Video,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -148,13 +149,7 @@ export default function VideoTranscriptApp() {
         <Card className="mx-auto max-w-3xl p-8">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-purple-400 p-3">
-              <Image
-                src="/placeholder.svg?height=40&width=40"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="h-full w-full"
-              />
+              <Video className="h-full w-full" />
             </div>
             <h1 className="mb-2 text-3xl font-bold">Video Transcripts</h1>
             <p className="text-gray-500">

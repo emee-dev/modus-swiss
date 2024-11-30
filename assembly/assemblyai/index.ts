@@ -395,7 +395,7 @@ export function queryTranscriptById(transcriptId: string): Result {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch transcript. Received: ${response.status} ${response.statusText} text: ${response.text()}`,
+      `Failed to fetch transcript. Received: ${response.status} ${response.statusText}; Text: ${response.text()}`,
     );
   }
 

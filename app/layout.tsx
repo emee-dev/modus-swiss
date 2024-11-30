@@ -17,9 +17,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Async interviewer",
-  description:
-    "Seamless interviews that makes sure everyone is satisfied at least.",
+  title: "Modus Swiss Devtools",
+  description: "Effective AI tools that help developers stay productive.",
 };
 
 export default function RootLayout({
