@@ -3,7 +3,9 @@
 
 # Ignore environment variable files
 .env
-.env.*
+.env.local
+.env.dev.local
+# .env.*
 
 # Ignore build output directories
 build/
