@@ -401,6 +401,7 @@ export function queryTranscriptById(transcriptId: string): Result {
 
   let responsedata = response.json<AssemblyAIGetTranscriptByIdResponse>();
 
+  // https://www.assemblyai.com/docs/api-reference/transcripts/get
   if (responsedata.status === "completed") {
     return { type: ReturnType.STRING, value: responsedata.text };
   } else {
