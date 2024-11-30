@@ -21,7 +21,7 @@
     },
     "assemblyai": {
       "type": "http",
-      "baseUrl": "https://api.assemblyai.com/v2/transcript/",
+      "baseUrl": "https://api.assemblyai.com/v2/",
       "headers": {
         "Authorization": "Bearer {{ASSEMBLYAI_API_KEY}}"
       }

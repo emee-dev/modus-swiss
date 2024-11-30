@@ -1,12 +1,23 @@
 import { GeminiGenerateOutput } from "@hypermode/models-as/models/gemini/generate";
 import { http, models } from "@hypermode/modus-sdk-as";
 import { Headers } from "@hypermode/modus-sdk-as/assembly/http";
+import { sleep, sleepCallback } from "./utils/sleep";
 import {
   OpenAIChatModel,
   SystemMessage,
   UserMessage,
 } from "@hypermode/modus-sdk-as/models/openai/chat";
 import { GeminiImagePrompt } from "./google";
+import { retryWithExponentialBackoff } from "./utils/retry";
+import {
+  AssemblyAIGenerateTranscriptResponse,
+  AssemblyAIGetTranscriptByIdResponse,
+  AssemblyAITranscriptPrompt,
+  Word,
+} from "./assemblyai";
+
+// store temp data, since there are no closures yet.
+var store = new Map<string, string>();
 
 export function generateText(instruction: string, prompt: string): string {
   const model = models.getModel<OpenAIChatModel>("text-generator");
@@ -98,45 +109,49 @@ export function aiImageToText(
   return text;
 }
 
-enum TranscriptStatus {
-  Queued = 0,
-  Processing = 1,
-  Completed = 2,
-  Error = 3,
+enum ReturnType {
+  STRING,
+  BOOLEAN,
 }
 
 
 @json
-class Word {
-  language_model!: string;
-  text!: string;
-  start!: u64;
-  end!: u64;
-  confidence!: u64;
-  speaker: string | null = "";
+class Result {
+  type!: ReturnType;
+  value: string = "";
 }
 
+function generateTranscript(file_url: string): string {
+  let header = new Headers();
 
-@json
-class TranscriptResult {
-  id!: string;
-  language_model!: string;
-  acoustic_model!: string;
-  language_code!: string;
-  status!: TranscriptStatus;
-  audio_url!: string;
-  text!: string;
-  words!: Word[];
+  const body = http.Content.from(new AssemblyAITranscriptPrompt(file_url));
+
+  const request = new http.Request(`https://api.assemblyai.com/v2/transcript`, {
+    body: body,
+    method: "POST",
+    headers: header,
+  });
+
+  const response = http.fetch(request);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to generate transcript. Received: ${response.status} ${response.statusText}; Text: ${response.text()}`,
+    );
+  }
+
+  let responsedata = response.json<AssemblyAIGenerateTranscriptResponse>();
+
+  if (responsedata.status !== "queued") {
+    throw new Error(
+      `Error processing the file ${responsedata.audio_url} and id: ${responsedata.id}`,
+    );
+  }
+
+  return responsedata.id;
 }
 
-class Pair<T, U> {
-  constructor(
-    public first: T,
-    public second: U,
-  ) {}
-}
-
-export function retrieveTranscript(transcriptId: string): string {
+function queryTranscriptById(transcriptId: string): Result {
   let header = new Headers();
 
   const request = new http.Request(
@@ -152,13 +167,45 @@ export function retrieveTranscript(transcriptId: string): string {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch transcript. Received: ${response.status} ${response.statusText}`,
+      `Failed to fetch transcript. Received: ${response.status} ${response.statusText} text: ${response.text()}`,
     );
   }
 
-  let responsedata = response.json<TranscriptResult>();
+  let responsedata = response.json<AssemblyAIGetTranscriptByIdResponse>();
 
-  return responsedata.text;
+  if (responsedata.status === "completed") {
+    return { type: ReturnType.STRING, value: responsedata.text };
+  } else {
+    return {
+      type: ReturnType.BOOLEAN,
+      value: `Failed to get transcript by Id status: ${responsedata.status}`,
+    };
+  }
+}
+
+export function aiMediaToText(file_url: string): string {
+  const transcriptId = generateTranscript(file_url);
+
+  function callBack(id: string): bool {
+    let call = queryTranscriptById(id);
+
+    if (call.type === ReturnType.BOOLEAN) {
+      return false;
+    } else {
+      store.set(id, call.value);
+      return true;
+    }
+  }
+
+  // Retry the function if it fails or is processing.
+  retryWithExponentialBackoff(callBack, 5, 1000, transcriptId);
+
+  const transcript = store.get(transcriptId);
+
+  // wipe the data
+  store.delete(transcriptId);
+
+  return transcript;
 }
 
 
