@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
 type QueuedFile = UploadCareOnChangeEvent["allEntries"][number];
 
@@ -51,11 +52,7 @@ const generateText = graphql(`
 
 const inputDescription = "Note: (YouTube links are not supported)";
 
-const wait = (ms: number) => {
-  return new Promise((resolve) => {
-    return setTimeout(resolve, ms);
-  });
-};
+const urlSchema = z.string().url("Please provide a valid file url.");
 
 export default function VideoTranscriptApp() {
   const { toast } = useToast();
@@ -89,6 +86,16 @@ export default function VideoTranscriptApp() {
 
   const handleUploadByLink = () => {
     if (!videoLink) return;
+
+    const result = urlSchema.safeParse(videoLink);
+
+    if (!result.success) {
+      return toast({
+        variant: "destructive",
+        description: result.error.errors.map((i) => i.message),
+      });
+    }
+
     mutate({ file_url: videoLink });
   };
 
