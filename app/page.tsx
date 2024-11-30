@@ -1,48 +1,10 @@
+import { Button } from "@/components/ui/button";
+import { tools } from "@/consts";
+import { TwitterLogoIcon } from "@radix-ui/react-icons";
 import { Command, Github, Zap } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-
 export default function DevUtilities() {
-  const tools = [
-    {
-      title: "CSV to JSON",
-      description:
-        "Easily convert CSV data to JSON format with our free tool. Quickest way to turn tabular data into a JSON format for APIs and data processing.",
-      href: "/tools/csv-to-json",
-    },
-    {
-      title: "Base64 Encode/Decode",
-      description:
-        "Easily encode and decode Base64 data with our online utility, so you can transmit your data safely or decode Base64-encoded strings.",
-      href: "/tools/base64",
-    },
-    {
-      title: "JSON Formatter",
-      description:
-        "Format and beautify your JSON data for better readability and debugging. Quickly visualize and organize your JSON data with ease.",
-      href: "/tools/json-formatter",
-    },
-    {
-      title: "YAML to JSON",
-      description:
-        "Easily convert YAML to JSON with our converter. Transform your YAML configuration files into JSON format instantly.",
-      href: "/tools/yaml-to-json",
-    },
-    {
-      title: "URL Encode/Decode",
-      description:
-        "Convert URLs to a safe format with URL encoding and decoding. Handle special characters in URLs with ease.",
-      href: "/tools/url-encoder",
-    },
-    {
-      title: "Timestamp to Date Converter",
-      description:
-        "Paste Unix timestamps and get a human readable date format instantly. Convert between different date formats easily.",
-      href: "/tools/timestamp-converter",
-    },
-  ];
-
   return (
     <main className="min-h-screen w-screen bg-background">
       <header className="border-b flex h-16 items-center px-4 sm:px-8">
@@ -52,13 +14,27 @@ export default function DevUtilities() {
         </Link>
         <div className="ml-auto flex items-center space-x-4">
           <Button variant="outline" asChild>
-            <Link href="https://github.com/your-repo">Contribute</Link>
+            <Link href="https://github.com/emee-dev/modus-swiss">
+              Contribute
+            </Link>
           </Button>
           <Button variant="outline" size="icon">
-            <Github className="size-4"></Github>
+            <Link
+              href="https://github.com/emee-dev"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Github className="size-4" />
+            </Link>
           </Button>
           <Button variant="outline" size="icon">
-            <Github className="size-4"></Github>
+            <Link
+              href="https://x.com/___emee_"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <TwitterLogoIcon className="size-4" />
+            </Link>
           </Button>
         </div>
       </header>
@@ -92,9 +68,11 @@ export default function DevUtilities() {
               <p className="mt-2 text-sm text-muted-foreground">
                 {tool.description}
               </p>
-              <Button className="mt-4" variant="secondary" size="sm">
-                Try it
-              </Button>
+              <div className="w-full flex mt-4">
+                <Button className="ml-auto" variant="secondary" size="sm">
+                  Try it
+                </Button>
+              </div>
             </Link>
           ))}
         </div>

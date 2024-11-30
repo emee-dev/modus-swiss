@@ -1,7 +1,14 @@
 {
   "name": "master-circuit",
+  "description": "The best AI powered devtool kit for the lazy and efficient developers.",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "Emmanuel Ajike",
+    "email": "emmanuelajike2000@gmail.com",
+    "url": "https://github.com/emee-dev"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "rm -rf .next && next build",

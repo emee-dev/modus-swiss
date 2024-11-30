@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getDescription, tools } from "@/consts";
 import { graphql } from "@/graphql";
 import { execute } from "@/graphql/execute";
 import { useToast } from "@/hooks/use-toast";
@@ -99,7 +100,7 @@ export default function ImageToText() {
           </div>
           <h1 className="mb-2 text-3xl font-bold">Image to Text</h1>
           <p className="text-gray-500">
-            Extract key details from receipts, bank notes etc.
+            {getDescription("/image-to-text").description}
           </p>
         </div>
 
